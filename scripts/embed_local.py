@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 
 # Configuration for local testing
-MAX_DOCS = 10000  # Limit dataset for local testing (set to None for full dataset)
+MAX_DOCS = 2000  # Set to None for full dataset
 USE_CPU = True  # Set to False to try GPU
 
 # Check for GPU availability (optional, disabled by default)

@@ -1,9 +1,10 @@
-ollama
 chromadb
 streamlit
 pandas
 sentence-transformers
 requests
-langchain
-langchain-community
+tf-keras==2.15.0
 rank-bm25
+langchain-huggingface
+langchain-chroma
+langchain-ollama

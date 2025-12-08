@@ -1,15 +1,13 @@
-import streamlit as st
-import ollama
 import os
-import pandas as pd
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain_community.llms import Ollama
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from rank_bm25 import BM25Okapi
+
 import chromadb
-from chromadb.config import Settings
+import pandas as pd
+import streamlit as st
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import ChatOllama
+from rank_bm25 import BM25Okapi
+
 from utils import hybrid_retrieve
 
 # Configuration
@@ -23,7 +21,7 @@ def load_retrieval_system():
     """Load ChromaDB and set up hybrid retrieval (dense + BM25)"""
     # Load embeddings model (same as embed.py)
     embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-large-en",
+        model_name="BAAI/bge-small-en-v1.5",
         encode_kwargs={'normalize_embeddings': True}
     )
     
@@ -51,7 +49,7 @@ def load_retrieval_system():
 @st.cache_resource
 def load_llm():
     """Load Ollama LLM"""
-    return Ollama(base_url="http://localhost:11434", model="llama3")
+    return ChatOllama(base_url="http://localhost:11434", model="llama3")
 
 # Streamlit UI
 with st.sidebar:
@@ -116,8 +114,9 @@ If the context does not contain relevant information, say:
 "No specific reports were found for that question, but here is general guidance."
 """
 
-            # Generate response using Ollama
-            response = llm(rag_prompt)
+            # Generate response using Ollama chat model
+            response_msg = llm.invoke(rag_prompt)
+            response = response_msg.content if hasattr(response_msg, "content") else str(response_msg)
             
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.chat_message("assistant").write(response)
@@ -126,7 +125,7 @@ If the context does not contain relevant information, say:
         with st.expander("📄 Source Reports"):
             for i, doc in enumerate(retrieved_docs[:3], 1):
                 st.markdown(f"**Report {i}:**")
-                st.text(doc[:200] + "..." if len(doc) > 200 else doc)
+                st.text(doc)
                 
 except FileNotFoundError as e:
     st.error(f"❌ Data not found: {e}")

@@ -3,11 +3,12 @@ Quick test script for RAG retrieval logic with fake data
 Run this while your real data is still downloading
 """
 import os
-import pandas as pd
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
-from rank_bm25 import BM25Okapi
+
 import chromadb
+import pandas as pd
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from rank_bm25 import BM25Okapi
 
 # Create test data directory
 TEST_DIR = "test_data"
