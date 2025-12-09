@@ -221,12 +221,26 @@ Write your answer like you're talking to a friend:
 If the experiences above don't relate to the question, just answer from your general knowledge naturally.
 """
 
-            # Generate response using Ollama chat model
-            response_msg = llm.invoke(rag_prompt)
-            response = response_msg.content if hasattr(response_msg, "content") else str(response_msg)
+            # Generate response using Ollama chat model with streaming
+            full_response = ""
+            with st.chat_message("assistant"):
+                # Create a placeholder for streaming
+                message_placeholder = st.empty()
+                
+                # Stream the response
+                for chunk in llm.stream(rag_prompt):
+                    if hasattr(chunk, "content"):
+                        full_response += chunk.content
+                    else:
+                        full_response += str(chunk)
+                    # Update the placeholder with the current response
+                    message_placeholder.write(full_response + "▌")
+                
+                # Final update without the cursor
+                message_placeholder.write(full_response)
             
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.chat_message("assistant").write(response)
+        # Store the complete response
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
         
         # Show retrieved documents (optional, for debugging)
         with st.expander("📄 Source Reports"):
