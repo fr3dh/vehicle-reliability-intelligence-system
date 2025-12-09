@@ -23,14 +23,24 @@ def hybrid_retrieve(query, vectorstore, bm25, documents, df=None, k=5, filter_di
     # Build ChromaDB filter from filter_dict
     chroma_filter = None
     if filter_dict:
-        chroma_filter = {}
-        for key, value in filter_dict.items():
-            if isinstance(value, dict):
-                # Handle operators like {"$gte": 2023}
-                chroma_filter[key] = value
-            else:
-                # Simple equality
-                chroma_filter[key] = value
+        # ChromaDB requires $and operator when multiple conditions exist
+        if len(filter_dict) > 1:
+            chroma_filter = {"$and": []}
+            for key, value in filter_dict.items():
+                if isinstance(value, dict):
+                    # Handle operators like {"$gte": 2023}
+                    chroma_filter["$and"].append({key: value})
+                else:
+                    # Simple equality
+                    chroma_filter["$and"].append({key: value})
+        else:
+            # Single filter - no need for $and
+            chroma_filter = {}
+            for key, value in filter_dict.items():
+                if isinstance(value, dict):
+                    chroma_filter[key] = value
+                else:
+                    chroma_filter[key] = value
     
     # Dense vector retrieval with filter
     if chroma_filter:
