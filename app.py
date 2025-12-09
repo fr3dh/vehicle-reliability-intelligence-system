@@ -174,13 +174,18 @@ try:
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # Check for sample question or chat input
+    # Check for sample question first, then check chat input
     prompt = None
     if "sample_question" in st.session_state and st.session_state.sample_question:
         prompt = st.session_state.sample_question
         del st.session_state.sample_question  # Clear it after use
-    else:
-        prompt = st.chat_input()
+    
+    # Always render chat input so it stays visible
+    chat_input = st.chat_input()
+    
+    # Use chat input if no sample question was set
+    if not prompt and chat_input:
+        prompt = chat_input
 
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
